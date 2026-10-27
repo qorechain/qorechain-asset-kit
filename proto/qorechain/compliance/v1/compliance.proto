@@ -1,0 +1,99 @@
+// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+// x/compliance: a registry of versioned compliance modules (maintained by
+// governance) and per-asset bindings (chosen by the issuer). The design follows
+// the modular compliance of ERC-3643 and the RuleEngine of CMTAT.
+
+syntax = "proto3";
+
+package qorechain.compliance.v1;
+
+option go_package = "github.com/qorechain/qorechain-asset-kit/clients/go/gen/qorechain/compliance/v1;compliancev1";
+option java_multiple_files = true;
+option java_package = "io.github.qorechain.assetkit.proto.compliance.v1";
+
+// Where the module's logic runs.
+enum ModuleRuntime {
+  MODULE_RUNTIME_UNSPECIFIED = 0;
+  // Compiled into the chain binary; added only by a software upgrade.
+  MODULE_RUNTIME_NATIVE = 1;
+  // A CosmWasm contract with a fixed query interface; added by governance.
+  MODULE_RUNTIME_WASM = 2;
+}
+
+// Lifecycle of one module version.
+enum ModuleStatus {
+  MODULE_STATUS_UNSPECIFIED = 0;
+  MODULE_STATUS_ACTIVE = 1;
+  // Existing bindings keep working; new bindings are refused.
+  MODULE_STATUS_DEPRECATED = 2;
+  // Every transfer of an asset bound to this version fails closed until the
+  // issuer migrates the binding. Used when a version is found to be unsafe.
+  MODULE_STATUS_DISABLED = 3;
+}
+
+// ComplianceModule is one version of a module in the registry.
+message ComplianceModule {
+  // Stable id, for example "country-blocklist".
+  string module_id = 1;
+  // Monotonic version, starting at 1.
+  uint32 version = 2;
+  ModuleRuntime runtime = 3;
+  // For MODULE_RUNTIME_WASM: the contract address. Empty for native modules.
+  string code_ref = 4;
+  ModuleStatus status = 5;
+  // JSON Schema of the binding parameters.
+  string params_schema = 6;
+  string description = 7;
+}
+
+// Binding attaches a pinned module version to an asset with parameters.
+message Binding {
+  string asset_id = 1;
+  string module_id = 2;
+  uint32 version = 3;
+  // JSON object validated against the module's params_schema.
+  string params_json = 4;
+  // Evaluation order; lower runs first.
+  uint32 position = 5;
+}
+
+// ModuleState is a module's per-asset state (for example the holder count of
+// max-holders), stored by the module and updated after each transfer.
+message ModuleState {
+  string asset_id = 1;
+  string module_id = 2;
+  bytes state = 3;
+}
+
+// Params of x/compliance.
+message Params {
+  // Upper bound on gas a WASM module may use per check.
+  uint64 max_module_gas = 1;
+}
+
+// GenesisState of x/compliance.
+message GenesisState {
+  Params params = 1;
+  repeated ComplianceModule modules = 2;
+  repeated Binding bindings = 3;
+  repeated ModuleState states = 4;
+}
+
+// ErrorCode lists the proposed error codes of x/compliance (codespace "compliance").
+enum ErrorCode {
+  ERROR_CODE_UNSPECIFIED = 0;
+  ERROR_CODE_MODULE_NOT_FOUND = 2;
+  ERROR_CODE_MODULE_VERSION_EXISTS = 3;
+  ERROR_CODE_MODULE_DEPRECATED = 4;
+  ERROR_CODE_MODULE_DISABLED = 5;
+  ERROR_CODE_INVALID_PARAMS = 6;
+  ERROR_CODE_BINDING_NOT_FOUND = 7;
+  ERROR_CODE_BINDING_EXISTS = 8;
+  ERROR_CODE_TRANSFER_REJECTED = 9;
+  ERROR_CODE_TOO_MANY_BINDINGS = 10;
+  ERROR_CODE_NOT_ISSUER = 11;
+  ERROR_CODE_UNAUTHORIZED = 12;
+}

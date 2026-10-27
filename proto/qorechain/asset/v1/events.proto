@@ -1,0 +1,122 @@
+// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package qorechain.asset.v1;
+
+import "qorechain/asset/v1/asset.proto";
+
+option go_package = "github.com/qorechain/qorechain-asset-kit/clients/go/gen/qorechain/asset/v1;assetv1";
+option java_multiple_files = true;
+option java_package = "io.github.qorechain.assetkit.proto.asset.v1";
+
+// Typed events emitted by x/asset. Every event carries the asset id so that an
+// indexer can rebuild the audit log of one asset from events alone.
+
+message EventAssetCreated {
+  string asset_id = 1;
+  string issuer = 2;
+  RwaFlagsV0 flags = 3;
+  string max_supply = 4;
+}
+
+message EventFlagsUpdated {
+  string asset_id = 1;
+  RwaFlagsV0 flags = 2;
+}
+
+message EventRoleChanged {
+  string asset_id = 1;
+  string address = 2;
+  Role role = 3;
+  bool granted = 4;
+}
+
+message EventIssuerTransferProposed {
+  string asset_id = 1;
+  string issuer = 2;
+  string new_issuer = 3;
+}
+
+message EventIssuerTransferred {
+  string asset_id = 1;
+  string previous_issuer = 2;
+  string new_issuer = 3;
+}
+
+message EventHolderAuthorized {
+  string asset_id = 1;
+  string holder = 2;
+  bool authorized = 3;
+  string agent = 4;
+}
+
+message EventMinted {
+  string asset_id = 1;
+  string to = 2;
+  string amount = 3;
+  string agent = 4;
+}
+
+message EventBurned {
+  string asset_id = 1;
+  string from = 2;
+  string amount = 3;
+  string agent = 4;
+}
+
+message EventTransferred {
+  string asset_id = 1;
+  string from = 2;
+  string to = 3;
+  string amount = 4;
+}
+
+message EventFrozen {
+  string asset_id = 1;
+  string holder = 2;
+  bool frozen = 3;
+  string agent = 4;
+}
+
+message EventPartiallyFrozen {
+  string asset_id = 1;
+  string holder = 2;
+  string frozen_amount = 3;
+  string agent = 4;
+}
+
+message EventPaused {
+  string asset_id = 1;
+  bool paused = 2;
+  string agent = 3;
+}
+
+message EventClawback {
+  string asset_id = 1;
+  string from = 2;
+  string amount = 3;
+  string agent = 4;
+  string reason = 5;
+}
+
+message EventForcedTransfer {
+  string asset_id = 1;
+  string from = 2;
+  string to = 3;
+  string amount = 4;
+  string agent = 5;
+  string reason = 6;
+}
+
+message EventTermsUpdated {
+  string asset_id = 1;
+  bytes terms_hash = 2;
+  string terms_uri = 3;
+}
+
+message EventRetired {
+  string asset_id = 1;
+}

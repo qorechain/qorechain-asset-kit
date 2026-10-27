@@ -1,0 +1,149 @@
+// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+// x/asset: issuance and lifecycle of regulated tokenized assets.
+// See docs/proposal.md for the semantics of every flag, role and error.
+
+syntax = "proto3";
+
+package qorechain.asset.v1;
+
+option go_package = "github.com/qorechain/qorechain-asset-kit/clients/go/gen/qorechain/asset/v1;assetv1";
+option java_multiple_files = true;
+option java_package = "io.github.qorechain.assetkit.proto.asset.v1";
+
+// RwaFlagsV0 is the first version of the per-asset control flags.
+// Flags are fixed at creation except where docs/proposal.md says an issuer may
+// relax them (require_auth, freezable, pausable may be switched off, never on).
+message RwaFlagsV0 {
+  // require_auth: an address must be authorized by an agent before it can
+  // receive or hold the asset (Stellar AUTH_REQUIRED, XRPL lsfMPTRequireAuth).
+  bool require_auth = 1;
+  // freezable: agents may freeze an address or part of its balance.
+  bool freezable = 2;
+  // pausable: agents may pause every transfer of the asset.
+  bool pausable = 3;
+  // non_transferable: holders cannot transfer; only issuance, redemption,
+  // clawback and forced transfer move balances.
+  bool non_transferable = 4;
+  // supply_cap: total supply can never exceed Asset.max_supply.
+  bool supply_cap = 5;
+  // require_hybrid_signature: every holder and every signer of an asset
+  // message must have a registered ML-DSA-87 key with proof of possession,
+  // and asset messages must arrive on the native lane with a hybrid signature.
+  bool require_hybrid_signature = 6;
+}
+
+// Role an address holds for one asset.
+enum Role {
+  ROLE_UNSPECIFIED = 0;
+  // The issuer owns the asset definition, grants roles and binds compliance
+  // modules. Exactly one issuer per asset; transferable in two steps.
+  ROLE_ISSUER = 1;
+  // An agent operates the asset: mint, burn, authorize holders, freeze,
+  // pause, clawback and forced transfer. Several agents are allowed. The
+  // issuer may perform every agent operation without holding this role.
+  ROLE_AGENT = 2;
+  // An auditor reads restricted data and may submit attestations of kind
+  // AUDIT_REPORT. An auditor cannot move balances.
+  ROLE_AUDITOR = 3;
+}
+
+// Lifecycle status of an asset.
+enum AssetStatus {
+  ASSET_STATUS_UNSPECIFIED = 0;
+  ASSET_STATUS_ACTIVE = 1;
+  ASSET_STATUS_PAUSED = 2;
+  // Retired assets accept only redemption (burn) by an agent.
+  ASSET_STATUS_RETIRED = 3;
+}
+
+// Asset is the on-chain definition of one tokenized asset.
+message Asset {
+  // Unique id, also the bank denom suffix: "asset/{asset_id}".
+  string asset_id = 1;
+  string issuer = 2;
+  // Pending issuer while a two-step issuer transfer is open; empty otherwise.
+  string pending_issuer = 3;
+  string name = 4;
+  string symbol = 5;
+  // Decimal places for display. Zero is allowed (and usual for shares).
+  uint32 decimals = 6;
+  RwaFlagsV0 flags = 7;
+  // Integer string. Required when flags.supply_cap is true.
+  string max_supply = 8;
+  // Integer string.
+  string total_supply = 9;
+  AssetStatus status = 10;
+  // Hash and URI of the legal terms (for example the registration agreement
+  // of a ledger-based security). The chain stores them, it does not read them.
+  bytes terms_hash = 11;
+  string terms_uri = 12;
+  // Compliance modules bound to the asset, evaluated in order (x/compliance).
+  repeated string compliance_module_ids = 13;
+  int64 created_height = 14;
+}
+
+// RoleGrant records that an address holds a role for an asset.
+message RoleGrant {
+  string asset_id = 1;
+  string address = 2;
+  Role role = 3;
+  int64 granted_height = 4;
+}
+
+// HolderState is the per-holder control state of one asset.
+message HolderState {
+  string asset_id = 1;
+  string address = 2;
+  // Integer string.
+  string balance = 3;
+  // Only meaningful when flags.require_auth is true.
+  bool authorized = 4;
+  // Whole-address freeze: nothing can leave or arrive.
+  bool frozen = 5;
+  // Partial freeze: this amount of the balance cannot leave (integer string).
+  string frozen_amount = 6;
+}
+
+// Params of x/asset, set by governance.
+message Params {
+  // Integer string, in uqor, burned or sent to the community pool on creation.
+  string creation_fee = 1;
+  // Upper bound on agents per asset.
+  uint32 max_agents = 2;
+  // Upper bound on compliance modules bound to one asset.
+  uint32 max_compliance_modules = 3;
+}
+
+// GenesisState of x/asset.
+message GenesisState {
+  Params params = 1;
+  repeated Asset assets = 2;
+  repeated RoleGrant roles = 3;
+  repeated HolderState holders = 4;
+}
+
+// ErrorCode lists the proposed ABCI error codes of x/asset (codespace "asset").
+enum ErrorCode {
+  ERROR_CODE_UNSPECIFIED = 0;
+  ERROR_CODE_ASSET_NOT_FOUND = 2;
+  ERROR_CODE_ASSET_EXISTS = 3;
+  ERROR_CODE_UNAUTHORIZED_ROLE = 4;
+  ERROR_CODE_HOLDER_NOT_AUTHORIZED = 5;
+  ERROR_CODE_ADDRESS_FROZEN = 6;
+  ERROR_CODE_INSUFFICIENT_UNFROZEN_BALANCE = 7;
+  ERROR_CODE_ASSET_PAUSED = 8;
+  ERROR_CODE_NON_TRANSFERABLE = 9;
+  ERROR_CODE_SUPPLY_CAP_EXCEEDED = 10;
+  ERROR_CODE_HYBRID_SIGNATURE_REQUIRED = 11;
+  ERROR_CODE_COMPLIANCE_REJECTED = 12;
+  ERROR_CODE_INSUFFICIENT_BALANCE = 13;
+  ERROR_CODE_FLAG_IMMUTABLE = 14;
+  ERROR_CODE_FLAG_NOT_ENABLED = 15;
+  ERROR_CODE_INVALID_AMOUNT = 16;
+  ERROR_CODE_ASSET_RETIRED = 17;
+  ERROR_CODE_TOO_MANY_AGENTS = 18;
+  ERROR_CODE_INVALID_ASSET_ID = 19;
+}

@@ -1,0 +1,100 @@
+// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package qorechain.identity.v1;
+
+import "qorechain/identity/v1/identity.proto";
+
+option go_package = "github.com/qorechain/qorechain-asset-kit/clients/go/gen/qorechain/identity/v1;identityv1";
+option java_multiple_files = true;
+option java_package = "io.github.qorechain.assetkit.proto.identity.v1";
+
+// Msg is the proposed transaction service of x/identity.
+service Msg {
+  rpc RegisterIdentity(MsgRegisterIdentity) returns (MsgRegisterIdentityResponse);
+  rpc UpdateCountry(MsgUpdateCountry) returns (MsgUpdateCountryResponse);
+  rpc BindAddress(MsgBindAddress) returns (MsgBindAddressResponse);
+  rpc UnbindAddress(MsgUnbindAddress) returns (MsgUnbindAddressResponse);
+  rpc AddClaim(MsgAddClaim) returns (MsgAddClaimResponse);
+  rpc RevokeClaim(MsgRevokeClaim) returns (MsgRevokeClaimResponse);
+  rpc RemoveIdentity(MsgRemoveIdentity) returns (MsgRemoveIdentityResponse);
+  rpc SetClaimIssuer(MsgSetClaimIssuer) returns (MsgSetClaimIssuerResponse);
+}
+
+// signer: agent (an identity agent from Params).
+message MsgRegisterIdentity {
+  string agent = 1;
+  string identity_id = 2;
+  string address = 3;
+  uint32 country = 4;
+}
+
+message MsgRegisterIdentityResponse {}
+
+// signer: agent.
+message MsgUpdateCountry {
+  string agent = 1;
+  string identity_id = 2;
+  uint32 country = 3;
+}
+
+message MsgUpdateCountryResponse {}
+
+// Adds an address to an identity (for example a recovery wallet). signer: agent.
+message MsgBindAddress {
+  string agent = 1;
+  string identity_id = 2;
+  string address = 3;
+}
+
+message MsgBindAddressResponse {}
+
+// signer: agent.
+message MsgUnbindAddress {
+  string agent = 1;
+  string identity_id = 2;
+  string address = 3;
+}
+
+message MsgUnbindAddressResponse {}
+
+// Adds a claim. signer: claim issuer (must be trusted for the topic).
+message MsgAddClaim {
+  string claim_issuer = 1;
+  string identity_id = 2;
+  uint32 topic = 3;
+  bytes data_hash = 4;
+  int64 valid_until = 5;
+}
+
+message MsgAddClaimResponse {}
+
+// signer: the claim issuer that added the claim.
+message MsgRevokeClaim {
+  string claim_issuer = 1;
+  string identity_id = 2;
+  uint32 topic = 3;
+}
+
+message MsgRevokeClaimResponse {}
+
+// signer: agent.
+message MsgRemoveIdentity {
+  string agent = 1;
+  string identity_id = 2;
+}
+
+message MsgRemoveIdentityResponse {}
+
+// Adds, updates or removes a trusted claim issuer. signer: authority
+// (the governance module account).
+message MsgSetClaimIssuer {
+  string authority = 1;
+  ClaimIssuer claim_issuer = 2;
+  bool remove = 3;
+}
+
+message MsgSetClaimIssuerResponse {}

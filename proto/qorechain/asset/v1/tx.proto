@@ -1,0 +1,214 @@
+// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package qorechain.asset.v1;
+
+import "qorechain/asset/v1/asset.proto";
+
+option go_package = "github.com/qorechain/qorechain-asset-kit/clients/go/gen/qorechain/asset/v1;assetv1";
+option java_multiple_files = true;
+option java_package = "io.github.qorechain.assetkit.proto.asset.v1";
+
+// Msg is the proposed transaction service of x/asset. Every message is signed
+// by the field named in its comment ("signer: ...").
+service Msg {
+  rpc CreateAsset(MsgCreateAsset) returns (MsgCreateAssetResponse);
+  rpc UpdateFlags(MsgUpdateFlags) returns (MsgUpdateFlagsResponse);
+  rpc SetRole(MsgSetRole) returns (MsgSetRoleResponse);
+  rpc ProposeIssuer(MsgProposeIssuer) returns (MsgProposeIssuerResponse);
+  rpc AcceptIssuer(MsgAcceptIssuer) returns (MsgAcceptIssuerResponse);
+  rpc AuthorizeHolder(MsgAuthorizeHolder) returns (MsgAuthorizeHolderResponse);
+  rpc Mint(MsgMint) returns (MsgMintResponse);
+  rpc Burn(MsgBurn) returns (MsgBurnResponse);
+  rpc Transfer(MsgTransfer) returns (MsgTransferResponse);
+  rpc Freeze(MsgFreeze) returns (MsgFreezeResponse);
+  rpc FreezePartial(MsgFreezePartial) returns (MsgFreezePartialResponse);
+  rpc Pause(MsgPause) returns (MsgPauseResponse);
+  rpc Clawback(MsgClawback) returns (MsgClawbackResponse);
+  rpc ForceTransfer(MsgForceTransfer) returns (MsgForceTransferResponse);
+  rpc SetTerms(MsgSetTerms) returns (MsgSetTermsResponse);
+  rpc Retire(MsgRetire) returns (MsgRetireResponse);
+}
+
+// MsgCreateAsset defines a new asset. signer: issuer.
+message MsgCreateAsset {
+  string issuer = 1;
+  string asset_id = 2;
+  string name = 3;
+  string symbol = 4;
+  uint32 decimals = 5;
+  RwaFlagsV0 flags = 6;
+  // Integer string; required when flags.supply_cap is true.
+  string max_supply = 7;
+  bytes terms_hash = 8;
+  string terms_uri = 9;
+}
+
+message MsgCreateAssetResponse {
+  // The bank denom of the asset: "asset/{asset_id}".
+  string denom = 1;
+}
+
+// MsgUpdateFlags relaxes flags. Only require_auth, freezable and pausable may
+// change, and only from true to false. signer: issuer.
+message MsgUpdateFlags {
+  string issuer = 1;
+  string asset_id = 2;
+  RwaFlagsV0 flags = 3;
+}
+
+message MsgUpdateFlagsResponse {}
+
+// MsgSetRole grants or revokes ROLE_AGENT or ROLE_AUDITOR. signer: issuer.
+message MsgSetRole {
+  string issuer = 1;
+  string asset_id = 2;
+  string address = 3;
+  Role role = 4;
+  bool granted = 5;
+}
+
+message MsgSetRoleResponse {}
+
+// MsgProposeIssuer opens a two-step issuer transfer. signer: issuer.
+message MsgProposeIssuer {
+  string issuer = 1;
+  string asset_id = 2;
+  string new_issuer = 3;
+}
+
+message MsgProposeIssuerResponse {}
+
+// MsgAcceptIssuer completes a two-step issuer transfer. signer: new_issuer.
+message MsgAcceptIssuer {
+  string new_issuer = 1;
+  string asset_id = 2;
+}
+
+message MsgAcceptIssuerResponse {}
+
+// MsgAuthorizeHolder authorizes or deauthorizes a holder when
+// flags.require_auth is set. signer: agent.
+message MsgAuthorizeHolder {
+  string agent = 1;
+  string asset_id = 2;
+  string holder = 3;
+  bool authorized = 4;
+}
+
+message MsgAuthorizeHolderResponse {}
+
+// MsgMint issues new units to a holder. Subject to require_auth, the supply cap,
+// require_hybrid_signature and the bound compliance modules (as a transfer
+// from the zero address). signer: agent.
+message MsgMint {
+  string agent = 1;
+  string asset_id = 2;
+  string to = 3;
+  string amount = 4;
+}
+
+message MsgMintResponse {}
+
+// MsgBurn redeems units from a holder's unfrozen balance. signer: agent.
+message MsgBurn {
+  string agent = 1;
+  string asset_id = 2;
+  string from = 3;
+  string amount = 4;
+}
+
+message MsgBurnResponse {}
+
+// MsgTransfer moves units between holders. Checked in this order: asset
+// status, pause, non_transferable, freeze, require_auth, hybrid key,
+// unfrozen balance, compliance modules. signer: from.
+message MsgTransfer {
+  string from = 1;
+  string asset_id = 2;
+  string to = 3;
+  string amount = 4;
+}
+
+message MsgTransferResponse {}
+
+// MsgFreeze freezes or unfreezes a whole address. signer: agent.
+message MsgFreeze {
+  string agent = 1;
+  string asset_id = 2;
+  string holder = 3;
+  bool frozen = 4;
+}
+
+message MsgFreezeResponse {}
+
+// MsgFreezePartial sets the frozen part of a holder's balance (absolute value,
+// not a delta). signer: agent.
+message MsgFreezePartial {
+  string agent = 1;
+  string asset_id = 2;
+  string holder = 3;
+  string frozen_amount = 4;
+}
+
+message MsgFreezePartialResponse {}
+
+// MsgPause pauses or unpauses every transfer of the asset. signer: agent.
+message MsgPause {
+  string agent = 1;
+  string asset_id = 2;
+  bool paused = 3;
+}
+
+message MsgPauseResponse {}
+
+// MsgClawback returns units from a holder to the issuer, ignoring freeze and
+// pause. Requires flags.freezable (an asset that cannot be frozen cannot be
+// clawed back either). signer: agent.
+message MsgClawback {
+  string agent = 1;
+  string asset_id = 2;
+  string from = 3;
+  string amount = 4;
+  // Free text reference (court order number, corporate action id).
+  string reason = 5;
+}
+
+message MsgClawbackResponse {}
+
+// MsgForceTransfer moves units between holders on the agent's authority,
+// ignoring the sender's freeze and pause. The receiver must not be frozen and
+// must pass require_auth, the hybrid key check and the bound compliance
+// modules. Requires flags.freezable. Used for recovery of a lost key and for
+// court-ordered transfers. signer: agent.
+message MsgForceTransfer {
+  string agent = 1;
+  string asset_id = 2;
+  string from = 3;
+  string to = 4;
+  string amount = 5;
+  string reason = 6;
+}
+
+message MsgForceTransferResponse {}
+
+// MsgSetTerms replaces the terms hash and URI. signer: issuer.
+message MsgSetTerms {
+  string issuer = 1;
+  string asset_id = 2;
+  bytes terms_hash = 3;
+  string terms_uri = 4;
+}
+
+message MsgSetTermsResponse {}
+
+// MsgRetire moves the asset to ASSET_STATUS_RETIRED. signer: issuer.
+message MsgRetire {
+  string issuer = 1;
+  string asset_id = 2;
+}
+
+message MsgRetireResponse {}

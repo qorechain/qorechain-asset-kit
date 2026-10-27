@@ -1,0 +1,99 @@
+// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+// x/attest: signed statements about an asset (net asset value, reserves,
+// custody confirmation, audit report) with a validity period, so that holders
+// and compliance modules can tell a fresh statement from a stale one.
+
+syntax = "proto3";
+
+package qorechain.attest.v1;
+
+option go_package = "github.com/qorechain/qorechain-asset-kit/clients/go/gen/qorechain/attest/v1;attestv1";
+option java_multiple_files = true;
+option java_package = "io.github.qorechain.assetkit.proto.attest.v1";
+
+enum AttestationKind {
+  ATTESTATION_KIND_UNSPECIFIED = 0;
+  // Net asset value per unit.
+  ATTESTATION_KIND_NAV = 1;
+  // Reserves or collateral backing the asset.
+  ATTESTATION_KIND_RESERVES = 2;
+  // Confirmation by a custodian that the underlying is held.
+  ATTESTATION_KIND_CUSTODY = 3;
+  // Reference to an audit report; submitted by an auditor (ROLE_AUDITOR).
+  ATTESTATION_KIND_AUDIT_REPORT = 4;
+  // Any other statement; described by the attester's metadata.
+  ATTESTATION_KIND_OTHER = 5;
+}
+
+// Freshness of the latest attestation of one kind for one asset.
+enum Freshness {
+  FRESHNESS_UNSPECIFIED = 0;
+  FRESHNESS_FRESH = 1;
+  // observed_at + valid_for_seconds is in the past.
+  FRESHNESS_STALE = 2;
+  // No attestation of this kind was ever accepted, or the latest was revoked.
+  FRESHNESS_MISSING = 3;
+}
+
+// Attester is an address allowed to attest for an asset and kinds.
+message Attester {
+  string asset_id = 1;
+  string address = 2;
+  repeated AttestationKind kinds = 3;
+  string name = 4;
+}
+
+// Attestation is one accepted statement.
+message Attestation {
+  uint64 id = 1;
+  string asset_id = 2;
+  AttestationKind kind = 3;
+  string attester = 4;
+  // Decimal string, for example "101.2345".
+  string value = 5;
+  // Unit of value, for example "USD" or "units".
+  string unit = 6;
+  // Hash of the underlying report.
+  bytes report_hash = 7;
+  string report_uri = 8;
+  // Unix seconds of the observation the statement refers to.
+  int64 observed_at = 9;
+  // Unix seconds after observed_at for which the statement is fresh.
+  int64 valid_for_seconds = 10;
+  // Block time at which the chain accepted it.
+  int64 accepted_at = 11;
+  bool revoked = 12;
+}
+
+// Params of x/attest.
+message Params {
+  // An attestation whose observed_at is more than this many seconds before the
+  // block time is refused.
+  int64 max_observation_lag_seconds = 1;
+  // Upper bound on valid_for_seconds.
+  int64 max_validity_seconds = 2;
+}
+
+// GenesisState of x/attest.
+message GenesisState {
+  Params params = 1;
+  repeated Attester attesters = 2;
+  repeated Attestation attestations = 3;
+  uint64 next_attestation_id = 4;
+}
+
+// ErrorCode lists the proposed error codes of x/attest (codespace "attest").
+enum ErrorCode {
+  ERROR_CODE_UNSPECIFIED = 0;
+  ERROR_CODE_NOT_AN_ATTESTER = 2;
+  ERROR_CODE_KIND_NOT_ALLOWED = 3;
+  ERROR_CODE_OBSERVATION_TOO_OLD = 4;
+  ERROR_CODE_OBSERVATION_IN_FUTURE = 5;
+  ERROR_CODE_VALIDITY_TOO_LONG = 6;
+  ERROR_CODE_ATTESTATION_NOT_FOUND = 7;
+  ERROR_CODE_NOT_ISSUER = 8;
+  ERROR_CODE_OLDER_THAN_LATEST = 9;
+}

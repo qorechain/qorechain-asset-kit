@@ -1,0 +1,59 @@
+// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package qorechain.settlement.v1;
+
+import "qorechain/settlement/v1/settlement.proto";
+
+option go_package = "github.com/qorechain/qorechain-asset-kit/clients/go/gen/qorechain/settlement/v1;settlementv1";
+option java_multiple_files = true;
+option java_package = "io.github.qorechain.assetkit.proto.settlement.v1";
+
+message EventVenueCreated {
+  string venue_id = 1;
+  string operator = 2;
+}
+
+message EventInstructionCreated {
+  uint64 id = 1;
+  string creator = 2;
+  string venue_id = 3;
+  repeated Leg legs = 4;
+  SettlementType settlement_type = 5;
+  int64 deadline = 6;
+}
+
+message EventAffirmed {
+  uint64 id = 1;
+  string party = 2;
+}
+
+message EventAffirmationWithdrawn {
+  uint64 id = 1;
+  string party = 2;
+}
+
+message EventInstructionExecuted {
+  uint64 id = 1;
+}
+
+// Emitted by the end blocker (ON_BLOCK) or by MsgExecuteInstruction when a leg
+// fails: the instruction moves to FAILED in a transaction that succeeds, so
+// the event is committed while no balance moves.
+message EventInstructionFailed {
+  uint64 id = 1;
+  uint32 leg_index = 2;
+  string reason = 3;
+}
+
+message EventInstructionCancelled {
+  uint64 id = 1;
+  string signer = 2;
+}
+
+message EventInstructionExpired {
+  uint64 id = 1;
+}

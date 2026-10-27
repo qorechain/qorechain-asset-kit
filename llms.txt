@@ -1,0 +1,31 @@
+# QoreChain Asset Kit
+
+> Open-source tooling for regulated tokenized assets (RWA) on QoreChain. What works today: EVM contracts on the QoreChain EVM Engine (ERC-3643 and CMTAT as dependencies, a hybrid-holder guard, ERC-4626/ERC-7540 vaults) and an issuer console. Native modules x/asset, x/identity, x/compliance, x/settlement, x/attest are a PROPOSAL: they do not exist on QoreChain and no upgrade adding them is scheduled. Apache-2.0 (GPL-3.0-or-later for the T-REX deployment script and test; docs Apache-2.0).
+
+Networks: mainnet qorechain-vladi (EVM chain id 9801), testnet qorechain-diana (EVM chain id 9800, RPC https://evm-testnet.qore.host). Every EVM transaction needs the sender's registered ML-DSA-87 key and an open EVM authorization window (MsgOpenEVMWindow, hybrid-signed on the native lane; allowed_targets empty for contract creation).
+The pqcKeyStatus precompile (0x0A02) returns (bool registered, uint8 algorithmId, bytes pubkey, bool possessionProven); active on the testnet only, mainnet activation undecided. Require possessionProven == true.
+
+## Docs
+- [README](README.md): what works today vs what needs a chain upgrade
+- [EVM adapters](docs/evm-adapters.md): contracts, upstream licences, testnet deployment, EVM window
+- [Proposal](docs/proposal.md): semantics of the proposed native modules and design references
+- [Technology standards](docs/technology-standards.md): reliability, governance, upgrades, MEV, observability, incidents, key management
+- [Legal templates](legal/README.md): drafts, not legal advice
+
+## Contracts (contracts/src)
+- QoreChainHybridHolderGuard: keyStatus, isHybridHolder, isEligible, requireHybridHolder, precompileActive, setExempt (owner); fails closed when 0x0A02 is inactive
+- QoreChainHybridHolderRule: CMTAT v3 IRuleEngineERC1404 + CMTA RuleEngine IRule; codes 60 (from), 61 (to), 62 (spender)
+- QoreChainHybridHolderModule: ERC-3643 (T-REX v4) modular compliance module
+- QoreChainRwaVault (ERC-4626), QoreChainRwaAsyncVault (ERC-7540: requestDeposit, fulfillDeposit, requestRedeem, fulfillRedeem, operators)
+- IERC7518: interface sketch only
+- Scripts: script/DeployCmtat.s.sol, script/erc3643/DeployErc3643.s.sol, script/DeployVaults.s.sol (dry run without --broadcast)
+
+## Clients of the proposal (clients/)
+- TypeScript @qorechain/asset-kit, Python qorechain-asset-kit (import qorechain_asset_kit), Go github.com/qorechain/qorechain-asset-kit/clients/go, Java io.github.qorechain:asset-kit
+- ChainClient: every call throws ChainUpgradeRequired (code CHAIN_UPGRADE_REQUIRED, module "x/asset" etc.)
+- MockChain: in-memory implementation of the proposed rules; errors MockChainError with code = ErrorCode enum name (e.g. ERROR_CODE_ADDRESS_FROZEN); helpers setHybridKey, fundBank, advance, events, defineModuleLogic
+
+## Proposed protos (proto/qorechain/*/v1)
+- asset: RwaFlagsV0 {require_auth, freezable, pausable, non_transferable, supply_cap, require_hybrid_signature}; roles ISSUER, AGENT, AUDITOR; Mint, Burn, Transfer, Freeze, FreezePartial, Pause, Clawback, ForceTransfer
+- identity: identities, claims, trusted claim issuers; compliance: versioned module registry and bindings
+- settlement: DvP instructions, bilateral affirmation, all legs or none; attest: attestations with FRESH/STALE/MISSING

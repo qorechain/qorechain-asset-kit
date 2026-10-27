@@ -1,0 +1,53 @@
+QoreChain Asset Kit
+Copyright 2026 QoreChain Association
+
+Code in this repository is licensed under the Apache License, Version 2.0 (see LICENSE),
+with one exception: the files under contracts/script/erc3643/ and contracts/test/erc3643/
+compile together with the ERC-3643 reference implementation (GPL-3.0) and are licensed
+under the GNU General Public License, version 3 or (at your option) any later version
+(SPDX GPL-3.0-or-later, as in the T-REX headers). The full text is in LICENSES/GPL-3.0.txt.
+Documentation under docs/ and legal/ is licensed under the Apache License, Version 2.0 too.
+
+No third-party source code is copied into this repository. Every dependency below is used
+as a git submodule or a package-manager dependency, unmodified, under its own licence.
+
+Solidity (contracts/, git submodules under contracts/lib/)
+  ERC-3643 reference implementation (T-REX) 4.1.6   GPL-3.0     Tokeny Solutions
+      https://github.com/TokenySolutions/T-REX (also https://github.com/ERC-3643/ERC-3643)
+      Used only by contracts/script/erc3643/ and contracts/test/erc3643/ (GPL-3.0 files).
+  ONCHAINID solidity 2.2.1                          GPL-3.0     ONCHAINID / Tokeny Solutions
+      https://github.com/onchain-id/solidity
+      Used only by contracts/script/erc3643/ and contracts/test/erc3643/ (GPL-3.0 files).
+  CMTAT 3.2.0                                       MPL-2.0     Capital Markets and Technology Association
+      https://github.com/CMTA/CMTAT
+      The MPL-2.0 files are used unmodified; their source is available at the URL above.
+  OpenZeppelin Contracts 5.5.0                      MIT         OpenZeppelin
+  OpenZeppelin Contracts Upgradeable 5.5.0          MIT         OpenZeppelin
+  OpenZeppelin Contracts 4.9.6                      MIT         OpenZeppelin (required by T-REX and ONCHAINID)
+  OpenZeppelin Contracts Upgradeable 4.9.6          MIT         OpenZeppelin (required by T-REX)
+  forge-std 1.17.0                                  MIT OR Apache-2.0  Foundry contributors (tests and scripts only)
+
+Issuer console (packages/issuer-console)
+  react, react-dom 19.3.0                           MIT         Meta Platforms, Inc. and affiliates
+  viem 2.57.5                                       MIT         weth, LLC
+  vite 8.3.4, @vitejs/plugin-react 6.1.2            MIT         VoidZero Inc. and Vite contributors (build only)
+  The console bundle embeds the compiled bytecode of CMTATStandalone (CMTAT 3.2.0, MPL-2.0);
+  its source is available at https://github.com/CMTA/CMTAT.
+
+TypeScript client (clients/ts, @qorechain/asset-kit)
+  @bufbuild/protobuf 2.16.0                         Apache-2.0 AND BSD-3-Clause  Buf Technologies, Google LLC
+  ts-proto 2.15.0                                   ISC         ts-proto contributors (code generation only)
+
+Python client (clients/python, qorechain-asset-kit)
+  protobuf 7.36.2                                   BSD-3-Clause  Google LLC
+
+Go client (clients/go)
+  google.golang.org/protobuf v1.36.12               BSD-3-Clause  The Go Authors
+
+Java client (clients/java, io.github.qorechain:asset-kit)
+  com.google.protobuf:protobuf-java 4.36.2          BSD-3-Clause  Google LLC
+
+Development and test tools (not distributed)
+  protoc 36.2 (BSD-3-Clause), buf (Apache-2.0), TypeScript 6.0.3 (Apache-2.0),
+  vitest 5.0.4 (MIT), pytest 9.1.1 (MIT), build 1.6.1 (MIT), hatchling 1.32.4 (MIT),
+  JUnit Jupiter 6.1.3 (EPL-2.0), Apache Maven plugins (Apache-2.0), Foundry (MIT OR Apache-2.0).

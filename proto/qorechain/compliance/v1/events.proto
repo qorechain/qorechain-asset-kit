@@ -1,0 +1,43 @@
+// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package qorechain.compliance.v1;
+
+import "qorechain/compliance/v1/compliance.proto";
+
+option go_package = "github.com/qorechain/qorechain-asset-kit/clients/go/gen/qorechain/compliance/v1;compliancev1";
+option java_multiple_files = true;
+option java_package = "io.github.qorechain.assetkit.proto.compliance.v1";
+
+message EventModuleRegistered {
+  string module_id = 1;
+  uint32 version = 2;
+  ModuleRuntime runtime = 3;
+}
+
+message EventModuleStatusChanged {
+  string module_id = 1;
+  uint32 version = 2;
+  ModuleStatus status = 3;
+}
+
+message EventModuleBound {
+  string asset_id = 1;
+  string module_id = 2;
+  uint32 version = 3;
+}
+
+message EventModuleUnbound {
+  string asset_id = 1;
+  string module_id = 2;
+}
+
+message EventBindingMigrated {
+  string asset_id = 1;
+  string module_id = 2;
+  uint32 from_version = 3;
+  uint32 to_version = 4;
+}

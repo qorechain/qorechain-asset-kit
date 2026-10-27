@@ -1,0 +1,57 @@
+// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package qorechain.settlement.v1;
+
+import "qorechain/settlement/v1/settlement.proto";
+
+option go_package = "github.com/qorechain/qorechain-asset-kit/clients/go/gen/qorechain/settlement/v1;settlementv1";
+option java_multiple_files = true;
+option java_package = "io.github.qorechain.assetkit.proto.settlement.v1";
+
+// Query is the proposed query service of x/settlement.
+service Query {
+  // GET /qorechain/settlement/v1/params
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse);
+  // GET /qorechain/settlement/v1/instructions/{id}
+  rpc Instruction(QueryInstructionRequest) returns (QueryInstructionResponse);
+  // GET /qorechain/settlement/v1/parties/{party}/instructions
+  rpc InstructionsByParty(QueryInstructionsByPartyRequest) returns (QueryInstructionsByPartyResponse);
+  // GET /qorechain/settlement/v1/venues/{venue_id}
+  rpc Venue(QueryVenueRequest) returns (QueryVenueResponse);
+}
+
+message QueryParamsRequest {}
+
+message QueryParamsResponse {
+  Params params = 1;
+}
+
+message QueryInstructionRequest {
+  uint64 id = 1;
+}
+
+message QueryInstructionResponse {
+  Instruction instruction = 1;
+}
+
+message QueryInstructionsByPartyRequest {
+  string party = 1;
+  // Optional status filter.
+  InstructionStatus status = 2;
+}
+
+message QueryInstructionsByPartyResponse {
+  repeated Instruction instructions = 1;
+}
+
+message QueryVenueRequest {
+  string venue_id = 1;
+}
+
+message QueryVenueResponse {
+  Venue venue = 1;
+}

@@ -1,0 +1,62 @@
+// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package qorechain.attest.v1;
+
+import "qorechain/attest/v1/attest.proto";
+
+option go_package = "github.com/qorechain/qorechain-asset-kit/clients/go/gen/qorechain/attest/v1;attestv1";
+option java_multiple_files = true;
+option java_package = "io.github.qorechain.assetkit.proto.attest.v1";
+
+// Query is the proposed query service of x/attest.
+service Query {
+  // GET /qorechain/attest/v1/params
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse);
+  // GET /qorechain/attest/v1/assets/{asset_id}/latest/{kind}
+  rpc Latest(QueryLatestRequest) returns (QueryLatestResponse);
+  // GET /qorechain/attest/v1/assets/{asset_id}/history/{kind}
+  rpc History(QueryHistoryRequest) returns (QueryHistoryResponse);
+  // GET /qorechain/attest/v1/assets/{asset_id}/attesters
+  rpc Attesters(QueryAttestersRequest) returns (QueryAttestersResponse);
+}
+
+message QueryParamsRequest {}
+
+message QueryParamsResponse {
+  Params params = 1;
+}
+
+message QueryLatestRequest {
+  string asset_id = 1;
+  AttestationKind kind = 2;
+}
+
+// Freshness is evaluated against the block time of the query height.
+message QueryLatestResponse {
+  Attestation attestation = 1;
+  Freshness freshness = 2;
+  // Unix seconds at which the attestation becomes (or became) stale.
+  int64 stale_at = 3;
+}
+
+message QueryHistoryRequest {
+  string asset_id = 1;
+  AttestationKind kind = 2;
+  uint32 limit = 3;
+}
+
+message QueryHistoryResponse {
+  repeated Attestation attestations = 1;
+}
+
+message QueryAttestersRequest {
+  string asset_id = 1;
+}
+
+message QueryAttestersResponse {
+  repeated Attester attesters = 1;
+}

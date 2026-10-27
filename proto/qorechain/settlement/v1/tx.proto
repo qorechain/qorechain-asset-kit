@@ -1,0 +1,90 @@
+// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package qorechain.settlement.v1;
+
+import "qorechain/settlement/v1/settlement.proto";
+
+option go_package = "github.com/qorechain/qorechain-asset-kit/clients/go/gen/qorechain/settlement/v1;settlementv1";
+option java_multiple_files = true;
+option java_package = "io.github.qorechain.assetkit.proto.settlement.v1";
+
+// Msg is the proposed transaction service of x/settlement.
+service Msg {
+  rpc CreateVenue(MsgCreateVenue) returns (MsgCreateVenueResponse);
+  rpc CreateInstruction(MsgCreateInstruction) returns (MsgCreateInstructionResponse);
+  rpc Affirm(MsgAffirm) returns (MsgAffirmResponse);
+  rpc WithdrawAffirmation(MsgWithdrawAffirmation) returns (MsgWithdrawAffirmationResponse);
+  rpc ExecuteInstruction(MsgExecuteInstruction) returns (MsgExecuteInstructionResponse);
+  rpc CancelInstruction(MsgCancelInstruction) returns (MsgCancelInstructionResponse);
+}
+
+// signer: operator.
+message MsgCreateVenue {
+  string operator = 1;
+  string venue_id = 2;
+  string description = 3;
+  repeated string allowed_creators = 4;
+}
+
+message MsgCreateVenueResponse {}
+
+// Creates an instruction. If the creator is a party it is recorded as
+// affirmed. signer: creator.
+message MsgCreateInstruction {
+  string creator = 1;
+  string venue_id = 2;
+  repeated Leg legs = 3;
+  SettlementType settlement_type = 4;
+  int64 settle_height = 5;
+  int64 deadline = 6;
+  string memo = 7;
+}
+
+message MsgCreateInstructionResponse {
+  uint64 id = 1;
+}
+
+// Affirms an instruction. Affirming does not lock funds; balances and every
+// asset control (freeze, pause, require_auth, compliance) are checked at
+// execution. signer: party.
+message MsgAffirm {
+  string party = 1;
+  uint64 id = 2;
+}
+
+message MsgAffirmResponse {
+  // True when this affirmation executed the instruction (ON_AFFIRMATION).
+  bool executed = 1;
+}
+
+// Withdraws an affirmation while the instruction is not executed. signer: party.
+message MsgWithdrawAffirmation {
+  string party = 1;
+  uint64 id = 2;
+}
+
+message MsgWithdrawAffirmationResponse {}
+
+// Executes a fully affirmed instruction. All legs settle or none does.
+// signer: any party, or the venue operator.
+message MsgExecuteInstruction {
+  string signer = 1;
+  uint64 id = 2;
+}
+
+message MsgExecuteInstructionResponse {
+  InstructionStatus status = 1;
+}
+
+// Cancels an instruction that has not executed. signer: creator, any party, or
+// the venue operator.
+message MsgCancelInstruction {
+  string signer = 1;
+  uint64 id = 2;
+}
+
+message MsgCancelInstructionResponse {}

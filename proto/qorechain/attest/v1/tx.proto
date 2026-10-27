@@ -1,0 +1,56 @@
+// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package qorechain.attest.v1;
+
+import "qorechain/attest/v1/attest.proto";
+
+option go_package = "github.com/qorechain/qorechain-asset-kit/clients/go/gen/qorechain/attest/v1;attestv1";
+option java_multiple_files = true;
+option java_package = "io.github.qorechain.assetkit.proto.attest.v1";
+
+// Msg is the proposed transaction service of x/attest.
+service Msg {
+  rpc SetAttester(MsgSetAttester) returns (MsgSetAttesterResponse);
+  rpc Submit(MsgSubmit) returns (MsgSubmitResponse);
+  rpc Revoke(MsgRevoke) returns (MsgRevokeResponse);
+}
+
+// Adds, updates or removes an attester for an asset. signer: issuer of the asset.
+message MsgSetAttester {
+  string issuer = 1;
+  Attester attester = 2;
+  bool remove = 3;
+}
+
+message MsgSetAttesterResponse {}
+
+// Submits an attestation. ATTESTATION_KIND_AUDIT_REPORT also requires the
+// signer to hold ROLE_AUDITOR for the asset. signer: attester.
+message MsgSubmit {
+  string attester = 1;
+  string asset_id = 2;
+  AttestationKind kind = 3;
+  string value = 4;
+  string unit = 5;
+  bytes report_hash = 6;
+  string report_uri = 7;
+  int64 observed_at = 8;
+  int64 valid_for_seconds = 9;
+}
+
+message MsgSubmitResponse {
+  uint64 id = 1;
+}
+
+// Revokes an attestation. signer: the attester that submitted it, or the issuer.
+message MsgRevoke {
+  string signer = 1;
+  uint64 id = 2;
+  string reason = 3;
+}
+
+message MsgRevokeResponse {}

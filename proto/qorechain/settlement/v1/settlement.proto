@@ -1,0 +1,122 @@
+// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+// x/settlement: delivery versus payment (DvP) with bilateral affirmation.
+// An instruction holds one or more legs; it executes only after every party
+// whose balance a leg debits or credits has affirmed it, and then all legs
+// settle atomically or none does. The design follows the instruction and
+// affirmation model of Polymesh settlement.
+
+syntax = "proto3";
+
+package qorechain.settlement.v1;
+
+option go_package = "github.com/qorechain/qorechain-asset-kit/clients/go/gen/qorechain/settlement/v1;settlementv1";
+option java_multiple_files = true;
+option java_package = "io.github.qorechain.assetkit.proto.settlement.v1";
+
+// Leg moves one amount of one denom from one party to another. The denom is
+// either an x/asset denom ("asset/{asset_id}") or a bank denom such as "uqor"
+// or an IBC denom used as the cash leg.
+message Leg {
+  string from = 1;
+  string to = 2;
+  string denom = 3;
+  // Integer string.
+  string amount = 4;
+}
+
+// When an instruction settles once every party has affirmed.
+enum SettlementType {
+  SETTLEMENT_TYPE_UNSPECIFIED = 0;
+  // Settles in the same transaction as the last affirmation.
+  SETTLEMENT_TYPE_ON_AFFIRMATION = 1;
+  // Waits for MsgExecuteInstruction from any party, before the deadline.
+  SETTLEMENT_TYPE_MANUAL = 2;
+  // Settles in the end blocker of settle_height if fully affirmed by then.
+  SETTLEMENT_TYPE_ON_BLOCK = 3;
+}
+
+enum InstructionStatus {
+  INSTRUCTION_STATUS_UNSPECIFIED = 0;
+  // Waiting for one or more affirmations.
+  INSTRUCTION_STATUS_PENDING = 1;
+  // Every party affirmed; waiting for execution (MANUAL, ON_BLOCK).
+  INSTRUCTION_STATUS_AFFIRMED = 2;
+  INSTRUCTION_STATUS_EXECUTED = 3;
+  // Execution was attempted and a leg failed; no leg moved.
+  INSTRUCTION_STATUS_FAILED = 4;
+  INSTRUCTION_STATUS_CANCELLED = 5;
+  // The deadline passed before execution.
+  INSTRUCTION_STATUS_EXPIRED = 6;
+}
+
+// Affirmation records one party's consent to an instruction.
+message Affirmation {
+  string party = 1;
+  bool affirmed = 2;
+  int64 height = 3;
+}
+
+// Instruction is a DvP instruction.
+message Instruction {
+  uint64 id = 1;
+  string creator = 2;
+  // Optional venue id (an operator such as a DLT trading facility).
+  string venue_id = 3;
+  repeated Leg legs = 4;
+  SettlementType settlement_type = 5;
+  // For SETTLEMENT_TYPE_ON_BLOCK.
+  int64 settle_height = 6;
+  // Unix seconds after which the instruction can no longer execute.
+  int64 deadline = 7;
+  InstructionStatus status = 8;
+  // One entry per party (every distinct from and to address of the legs).
+  repeated Affirmation affirmations = 9;
+  // Free text set when status is FAILED, for example the error of the leg.
+  string failure_reason = 10;
+  // Free text reference, for example a trade id.
+  string memo = 11;
+}
+
+// Venue is an optional operator under which instructions are created.
+message Venue {
+  string venue_id = 1;
+  string operator = 2;
+  string description = 3;
+  // When non-empty, only these addresses may create instructions in the venue.
+  repeated string allowed_creators = 4;
+}
+
+// Params of x/settlement.
+message Params {
+  uint32 max_legs = 1;
+  // Longest allowed deadline, in seconds from creation.
+  int64 max_deadline_seconds = 2;
+}
+
+// GenesisState of x/settlement.
+message GenesisState {
+  Params params = 1;
+  repeated Instruction instructions = 2;
+  repeated Venue venues = 3;
+  uint64 next_instruction_id = 4;
+}
+
+// ErrorCode lists the proposed error codes of x/settlement (codespace "settlement").
+enum ErrorCode {
+  ERROR_CODE_UNSPECIFIED = 0;
+  ERROR_CODE_INSTRUCTION_NOT_FOUND = 2;
+  ERROR_CODE_NOT_A_PARTY = 3;
+  ERROR_CODE_NOT_FULLY_AFFIRMED = 4;
+  ERROR_CODE_DEADLINE_PASSED = 5;
+  ERROR_CODE_INVALID_STATUS = 6;
+  ERROR_CODE_LEG_FAILED = 7;
+  ERROR_CODE_TOO_MANY_LEGS = 8;
+  ERROR_CODE_VENUE_NOT_FOUND = 9;
+  ERROR_CODE_NOT_ALLOWED_IN_VENUE = 10;
+  ERROR_CODE_INVALID_LEG = 11;
+  ERROR_CODE_VENUE_EXISTS = 12;
+  ERROR_CODE_DEADLINE_TOO_FAR = 13;
+}

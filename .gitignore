@@ -1,0 +1,25 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+*.tgz
+.env
+.env.*
+!.env.example
+# Foundry
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+# Go
+clients/go/bin/
+# Java
+clients/java/target/
+# Python
+__pycache__/
+*.egg-info/
+.venv/
+.pytest_cache/
+clients/python/build/
+.DS_Store
+.idea/
+.vscode/

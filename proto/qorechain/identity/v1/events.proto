@@ -1,0 +1,52 @@
+// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package qorechain.identity.v1;
+
+option go_package = "github.com/qorechain/qorechain-asset-kit/clients/go/gen/qorechain/identity/v1;identityv1";
+option java_multiple_files = true;
+option java_package = "io.github.qorechain.assetkit.proto.identity.v1";
+
+message EventIdentityRegistered {
+  string identity_id = 1;
+  string address = 2;
+  uint32 country = 3;
+  string agent = 4;
+}
+
+message EventCountryUpdated {
+  string identity_id = 1;
+  uint32 country = 2;
+}
+
+message EventAddressBound {
+  string identity_id = 1;
+  string address = 2;
+  bool bound = 3;
+}
+
+message EventClaimAdded {
+  string identity_id = 1;
+  uint32 topic = 2;
+  string claim_issuer = 3;
+  int64 valid_until = 4;
+}
+
+message EventClaimRevoked {
+  string identity_id = 1;
+  uint32 topic = 2;
+  string claim_issuer = 3;
+}
+
+message EventIdentityRemoved {
+  string identity_id = 1;
+}
+
+message EventClaimIssuerChanged {
+  string address = 1;
+  repeated uint32 topics = 2;
+  bool removed = 3;
+}

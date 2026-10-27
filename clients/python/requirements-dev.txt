@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: Apache-2.0
+# Exact pins; every version was at least 14 days old when pinned.
+protobuf==7.36.2
+pytest==9.1.1
+build==1.6.1
+hatchling==1.32.4

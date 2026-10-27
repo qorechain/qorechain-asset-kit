@@ -1,0 +1,69 @@
+// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package qorechain.identity.v1;
+
+import "qorechain/identity/v1/identity.proto";
+
+option go_package = "github.com/qorechain/qorechain-asset-kit/clients/go/gen/qorechain/identity/v1;identityv1";
+option java_multiple_files = true;
+option java_package = "io.github.qorechain.assetkit.proto.identity.v1";
+
+// Query is the proposed query service of x/identity.
+service Query {
+  // GET /qorechain/identity/v1/params
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse);
+  // GET /qorechain/identity/v1/identities/{identity_id}
+  rpc Identity(QueryIdentityRequest) returns (QueryIdentityResponse);
+  // GET /qorechain/identity/v1/addresses/{address}
+  rpc IdentityByAddress(QueryIdentityByAddressRequest) returns (QueryIdentityByAddressResponse);
+  // GET /qorechain/identity/v1/claim_issuers
+  rpc ClaimIssuers(QueryClaimIssuersRequest) returns (QueryClaimIssuersResponse);
+  // GET /qorechain/identity/v1/addresses/{address}/verified?topics=1,7
+  rpc IsVerified(QueryIsVerifiedRequest) returns (QueryIsVerifiedResponse);
+}
+
+message QueryParamsRequest {}
+
+message QueryParamsResponse {
+  Params params = 1;
+}
+
+message QueryIdentityRequest {
+  string identity_id = 1;
+}
+
+message QueryIdentityResponse {
+  Identity identity = 1;
+}
+
+message QueryIdentityByAddressRequest {
+  string address = 1;
+}
+
+message QueryIdentityByAddressResponse {
+  Identity identity = 1;
+}
+
+message QueryClaimIssuersRequest {}
+
+message QueryClaimIssuersResponse {
+  repeated ClaimIssuer claim_issuers = 1;
+}
+
+// An address is verified for a set of topics when it is bound to an identity
+// that holds, for every topic, an unrevoked and unexpired claim from an issuer
+// trusted for that topic.
+message QueryIsVerifiedRequest {
+  string address = 1;
+  repeated uint32 topics = 2;
+}
+
+message QueryIsVerifiedResponse {
+  bool verified = 1;
+  // Topics that are missing, revoked or expired.
+  repeated uint32 missing_topics = 2;
+}

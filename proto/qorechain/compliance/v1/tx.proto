@@ -1,0 +1,72 @@
+// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package qorechain.compliance.v1;
+
+import "qorechain/compliance/v1/compliance.proto";
+
+option go_package = "github.com/qorechain/qorechain-asset-kit/clients/go/gen/qorechain/compliance/v1;compliancev1";
+option java_multiple_files = true;
+option java_package = "io.github.qorechain.assetkit.proto.compliance.v1";
+
+// Msg is the proposed transaction service of x/compliance.
+service Msg {
+  rpc RegisterModule(MsgRegisterModule) returns (MsgRegisterModuleResponse);
+  rpc SetModuleStatus(MsgSetModuleStatus) returns (MsgSetModuleStatusResponse);
+  rpc BindModule(MsgBindModule) returns (MsgBindModuleResponse);
+  rpc UnbindModule(MsgUnbindModule) returns (MsgUnbindModuleResponse);
+  rpc MigrateBinding(MsgMigrateBinding) returns (MsgMigrateBindingResponse);
+}
+
+// Registers a new module version. signer: authority (governance).
+message MsgRegisterModule {
+  string authority = 1;
+  ComplianceModule module = 2;
+}
+
+message MsgRegisterModuleResponse {}
+
+// Deprecates or disables a module version. signer: authority (governance).
+message MsgSetModuleStatus {
+  string authority = 1;
+  string module_id = 2;
+  uint32 version = 3;
+  ModuleStatus status = 4;
+}
+
+message MsgSetModuleStatusResponse {}
+
+// Binds an ACTIVE module version to an asset. signer: issuer of the asset.
+message MsgBindModule {
+  string issuer = 1;
+  string asset_id = 2;
+  string module_id = 3;
+  uint32 version = 4;
+  string params_json = 5;
+}
+
+message MsgBindModuleResponse {}
+
+// signer: issuer of the asset.
+message MsgUnbindModule {
+  string issuer = 1;
+  string asset_id = 2;
+  string module_id = 3;
+}
+
+message MsgUnbindModuleResponse {}
+
+// Moves a binding to another version of the same module, optionally with new
+// parameters. The module's state is carried over. signer: issuer of the asset.
+message MsgMigrateBinding {
+  string issuer = 1;
+  string asset_id = 2;
+  string module_id = 3;
+  uint32 to_version = 4;
+  string params_json = 5;
+}
+
+message MsgMigrateBindingResponse {}

@@ -1,0 +1,33 @@
+# SPDX-License-Identifier: Apache-2.0
+[build-system]
+requires = ["hatchling==1.32.4"]
+build-backend = "hatchling.build"
+
+[project]
+name = "qorechain-asset-kit"
+version = "0.1.0"
+description = "Proposed QoreChain regulated-asset modules: generated types, a client that reports the required chain upgrade, and an in-memory MockChain."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "QoreChain Association" }]
+requires-python = ">=3.10"
+dependencies = ["protobuf>=7.36.2,<8"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Development Status :: 3 - Alpha",
+]
+
+[project.urls]
+Homepage = "https://github.com/qorechain/qorechain-asset-kit"
+Source = "https://github.com/qorechain/qorechain-asset-kit/tree/main/clients/python"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/qorechain_asset_kit"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/qorechain_asset_kit", "tests", "README.md", "LICENSE", "NOTICE", "pyproject.toml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

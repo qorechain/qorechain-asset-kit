@@ -1,0 +1,10 @@
+lib/T-REX/:@openzeppelin/contracts/=lib/openzeppelin-contracts-v4/contracts/
+lib/T-REX/:@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable-v4/contracts/
+lib/onchain-id/:@openzeppelin/contracts/=lib/openzeppelin-contracts-v4/contracts/
+lib/openzeppelin-contracts-upgradeable-v4/:@openzeppelin/contracts/=lib/openzeppelin-contracts-v4/contracts/
+forge-std/=lib/forge-std/src/
+@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
+@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/
+CMTAT/=lib/CMTAT/contracts/
+T-REX/=lib/T-REX/contracts/
+@onchain-id/solidity/=lib/onchain-id/

@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: Apache-2.0
+name: ci-contracts
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  forge:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Top-level dependencies only; their own nested submodules are not used (see remappings.txt).
+          submodules: true
+      - uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09 # v1.9.1
+        with:
+          version: v1.7.1
+      - run: forge fmt --check
+      - run: forge build --sizes
+      - run: forge test -vvv

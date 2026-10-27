@@ -1,0 +1,36 @@
+// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package qorechain.attest.v1;
+
+import "qorechain/attest/v1/attest.proto";
+
+option go_package = "github.com/qorechain/qorechain-asset-kit/clients/go/gen/qorechain/attest/v1;attestv1";
+option java_multiple_files = true;
+option java_package = "io.github.qorechain.assetkit.proto.attest.v1";
+
+message EventAttesterChanged {
+  string asset_id = 1;
+  string address = 2;
+  repeated AttestationKind kinds = 3;
+  bool removed = 4;
+}
+
+message EventAttestationSubmitted {
+  uint64 id = 1;
+  string asset_id = 2;
+  AttestationKind kind = 3;
+  string attester = 4;
+  string value = 5;
+  int64 observed_at = 6;
+  int64 valid_for_seconds = 7;
+}
+
+message EventAttestationRevoked {
+  uint64 id = 1;
+  string signer = 2;
+  string reason = 3;
+}

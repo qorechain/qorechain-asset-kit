@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: Apache-2.0
+name: ci-proto
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: bufbuild/buf-action@85aebf73123b5c15fd5528aaecbf9129cddf7fa7 # v1.6.0
+        with:
+          setup_only: true
+      - run: buf lint
+      - run: buf build -o /dev/null
+      - name: Every proposed proto file carries the proposal notice
+        run: |
+          for f in $(find proto -name '*.proto'); do
+            head -1 "$f" | grep -qx '// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.' || { echo "missing notice: $f"; exit 1; }
+          done

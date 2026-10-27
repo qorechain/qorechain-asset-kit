@@ -1,0 +1,111 @@
+// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package qorechain.asset.v1;
+
+import "qorechain/asset/v1/asset.proto";
+
+option go_package = "github.com/qorechain/qorechain-asset-kit/clients/go/gen/qorechain/asset/v1;assetv1";
+option java_multiple_files = true;
+option java_package = "io.github.qorechain.assetkit.proto.asset.v1";
+
+// Query is the proposed query service of x/asset.
+// Proposed REST paths are given in each comment.
+service Query {
+  // GET /qorechain/asset/v1/params
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse);
+  // GET /qorechain/asset/v1/assets/{asset_id}
+  rpc Asset(QueryAssetRequest) returns (QueryAssetResponse);
+  // GET /qorechain/asset/v1/assets
+  rpc Assets(QueryAssetsRequest) returns (QueryAssetsResponse);
+  // GET /qorechain/asset/v1/assets/{asset_id}/holders/{address}
+  rpc Holder(QueryHolderRequest) returns (QueryHolderResponse);
+  // GET /qorechain/asset/v1/assets/{asset_id}/holders
+  rpc Holders(QueryHoldersRequest) returns (QueryHoldersResponse);
+  // GET /qorechain/asset/v1/assets/{asset_id}/roles
+  rpc Roles(QueryRolesRequest) returns (QueryRolesResponse);
+  // GET /qorechain/asset/v1/assets/{asset_id}/can_transfer
+  rpc CanTransfer(QueryCanTransferRequest) returns (QueryCanTransferResponse);
+}
+
+// PageRequest is a minimal cursor (the chain would use cosmos.base.query.v1beta1).
+message PageRequest {
+  bytes key = 1;
+  uint64 limit = 2;
+}
+
+message PageResponse {
+  bytes next_key = 1;
+}
+
+message QueryParamsRequest {}
+
+message QueryParamsResponse {
+  Params params = 1;
+}
+
+message QueryAssetRequest {
+  string asset_id = 1;
+}
+
+message QueryAssetResponse {
+  Asset asset = 1;
+}
+
+message QueryAssetsRequest {
+  // Optional filter by issuer.
+  string issuer = 1;
+  PageRequest pagination = 2;
+}
+
+message QueryAssetsResponse {
+  repeated Asset assets = 1;
+  PageResponse pagination = 2;
+}
+
+message QueryHolderRequest {
+  string asset_id = 1;
+  string address = 2;
+}
+
+message QueryHolderResponse {
+  HolderState holder = 1;
+}
+
+message QueryHoldersRequest {
+  string asset_id = 1;
+  PageRequest pagination = 2;
+}
+
+message QueryHoldersResponse {
+  repeated HolderState holders = 1;
+  PageResponse pagination = 2;
+}
+
+message QueryRolesRequest {
+  string asset_id = 1;
+}
+
+message QueryRolesResponse {
+  repeated RoleGrant roles = 1;
+}
+
+// QueryCanTransferRequest is a dry run of MsgTransfer.
+message QueryCanTransferRequest {
+  string asset_id = 1;
+  string from = 2;
+  string to = 3;
+  string amount = 4;
+}
+
+message QueryCanTransferResponse {
+  bool allowed = 1;
+  // ErrorCode value of the first failing check; ERROR_CODE_UNSPECIFIED when allowed.
+  ErrorCode code = 2;
+  // Set when code is ERROR_CODE_COMPLIANCE_REJECTED: the module that refused.
+  string compliance_module_id = 3;
+  string reason = 4;
+}

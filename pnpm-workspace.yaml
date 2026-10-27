@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: Apache-2.0
+packages:
+  - clients/ts
+  - packages/issuer-console
+# Every third-party version must be at least 14 days old when it is resolved.
+minimumReleaseAge: 20160
+minimumReleaseAgeExclude:
+  - "@qorechain/*"

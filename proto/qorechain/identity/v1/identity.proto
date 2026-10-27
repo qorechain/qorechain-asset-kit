@@ -1,0 +1,74 @@
+// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+// x/identity: on-chain identity records and claims, in the spirit of ONCHAINID
+// as used by ERC-3643. No personal data is stored: only a country code,
+// claim topics, claim issuers, hashes and validity periods.
+
+syntax = "proto3";
+
+package qorechain.identity.v1;
+
+option go_package = "github.com/qorechain/qorechain-asset-kit/clients/go/gen/qorechain/identity/v1;identityv1";
+option java_multiple_files = true;
+option java_package = "io.github.qorechain.assetkit.proto.identity.v1";
+
+// Claim is an attestation by a trusted claim issuer about an identity, for
+// example "KYC passed" (topic 1) or "qualified investor" (topic 7).
+message Claim {
+  // Claim topic number. Topic numbers are registered per network by governance.
+  uint32 topic = 1;
+  // Address of the claim issuer that signed the claim.
+  string issuer = 2;
+  // Hash of the off-chain evidence; never the evidence itself.
+  bytes data_hash = 3;
+  // Unix seconds. Zero means no expiry.
+  int64 valid_until = 4;
+  bool revoked = 5;
+}
+
+// Identity binds one or more addresses to an identity record.
+message Identity {
+  string identity_id = 1;
+  // Addresses that act for this identity (wallet recovery adds a new one).
+  repeated string addresses = 2;
+  // ISO 3166-1 numeric country code of residence or incorporation.
+  uint32 country = 3;
+  repeated Claim claims = 4;
+  // Address that registered the identity (an identity agent).
+  string registered_by = 5;
+}
+
+// ClaimIssuer is a trusted issuer of claims for a set of topics.
+message ClaimIssuer {
+  string address = 1;
+  string name = 2;
+  repeated uint32 topics = 3;
+}
+
+// Params of x/identity, set by governance.
+message Params {
+  // Addresses allowed to register and update identities.
+  repeated string identity_agents = 1;
+}
+
+// GenesisState of x/identity.
+message GenesisState {
+  Params params = 1;
+  repeated Identity identities = 2;
+  repeated ClaimIssuer claim_issuers = 3;
+}
+
+// ErrorCode lists the proposed error codes of x/identity (codespace "identity").
+enum ErrorCode {
+  ERROR_CODE_UNSPECIFIED = 0;
+  ERROR_CODE_IDENTITY_NOT_FOUND = 2;
+  ERROR_CODE_IDENTITY_EXISTS = 3;
+  ERROR_CODE_ADDRESS_ALREADY_BOUND = 4;
+  ERROR_CODE_NOT_IDENTITY_AGENT = 5;
+  ERROR_CODE_CLAIM_ISSUER_NOT_TRUSTED = 6;
+  ERROR_CODE_CLAIM_TOPIC_NOT_ALLOWED = 7;
+  ERROR_CODE_CLAIM_NOT_FOUND = 8;
+  ERROR_CODE_UNAUTHORIZED = 9;
+}

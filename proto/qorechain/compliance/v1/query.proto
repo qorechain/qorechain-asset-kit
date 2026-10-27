@@ -1,0 +1,75 @@
+// PROPOSAL: not implemented on QoreChain; requires a chain upgrade that is not scheduled.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package qorechain.compliance.v1;
+
+import "qorechain/compliance/v1/compliance.proto";
+
+option go_package = "github.com/qorechain/qorechain-asset-kit/clients/go/gen/qorechain/compliance/v1;compliancev1";
+option java_multiple_files = true;
+option java_package = "io.github.qorechain.assetkit.proto.compliance.v1";
+
+// Query is the proposed query service of x/compliance.
+service Query {
+  // GET /qorechain/compliance/v1/params
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse);
+  // GET /qorechain/compliance/v1/modules
+  rpc Modules(QueryModulesRequest) returns (QueryModulesResponse);
+  // GET /qorechain/compliance/v1/modules/{module_id}/{version}
+  rpc Module(QueryModuleRequest) returns (QueryModuleResponse);
+  // GET /qorechain/compliance/v1/assets/{asset_id}/bindings
+  rpc Bindings(QueryBindingsRequest) returns (QueryBindingsResponse);
+  // GET /qorechain/compliance/v1/assets/{asset_id}/check
+  rpc Check(QueryCheckRequest) returns (QueryCheckResponse);
+}
+
+message QueryParamsRequest {}
+
+message QueryParamsResponse {
+  Params params = 1;
+}
+
+message QueryModulesRequest {
+  // Optional filter.
+  string module_id = 1;
+}
+
+message QueryModulesResponse {
+  repeated ComplianceModule modules = 1;
+}
+
+message QueryModuleRequest {
+  string module_id = 1;
+  uint32 version = 2;
+}
+
+message QueryModuleResponse {
+  ComplianceModule module = 1;
+}
+
+message QueryBindingsRequest {
+  string asset_id = 1;
+}
+
+message QueryBindingsResponse {
+  repeated Binding bindings = 1;
+}
+
+// Runs the bound modules for a prospective transfer. from is empty for a mint.
+message QueryCheckRequest {
+  string asset_id = 1;
+  string from = 2;
+  string to = 3;
+  string amount = 4;
+}
+
+message QueryCheckResponse {
+  bool allowed = 1;
+  // First module that refused; empty when allowed.
+  string module_id = 2;
+  uint32 version = 3;
+  string reason = 4;
+}
