@@ -55,6 +55,7 @@ pnpm install && pnpm -r build && pnpm -r test
 ```ts
 import { ChainClient, ChainUpgradeRequired, MockChain } from "@qorechain/asset-kit";
 
+const issuer = "qor1issuer";
 await new ChainClient().asset.createAsset({ issuer, assetId: "bond-2030" }); // rejects: ChainUpgradeRequired("x/asset")
 
 const chain = new MockChain(); // the proposed rules, in memory

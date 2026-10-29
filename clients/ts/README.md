@@ -9,8 +9,10 @@ Client for the **proposed** QoreChain regulated-asset modules (`x/asset`, `x/ide
 ```ts
 import { ChainClient, ChainUpgradeRequired, MockChain, asset } from "@qorechain/asset-kit";
 
+const issuer = "qor1issuer", alice = "qor1alice", bob = "qor1bob";
+
 // Today: a controlled failure, no network request.
-await new ChainClient().asset.mint({ agent, assetId: "bond-2030", to, amount: "10" })
+await new ChainClient().asset.mint({ agent: issuer, assetId: "bond-2030", to: alice, amount: "10" })
   .catch((e) => e instanceof ChainUpgradeRequired); // e.module === "x/asset"
 
 // Development: the proposed rules, in memory.

@@ -24,7 +24,7 @@ _, err := chain.Asset().CreateAsset(ctx, &assetv1.MsgCreateAsset{
 })
 _, err = chain.Asset().Mint(ctx, &assetv1.MsgMint{Agent: "qor1issuer", AssetId: "bond-2030", To: "qor1alice", Amount: "100"})
 
-var mockErr *assetkit.MockChainError // refused messages: Module, Code (for example ERROR_CODE_ADDRESS_FROZEN), Message
+// A refused message returns *assetkit.MockChainError (Module, Code such as ERROR_CODE_ADDRESS_FROZEN, Message).
 _, err = assetkit.NewChainClient().Asset().Mint(ctx, &assetv1.MsgMint{})
 var upgrade *assetkit.ChainUpgradeRequired
 errors.As(err, &upgrade) // true, upgrade.Module == "x/asset"
